@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Match Cut - a movie link duel</title>
+<!-- META:START -->
+  <meta name="description" content="Name a movie that shares an actor, director, writer, cinematographer or composer with the last one. Duel the bot or a friend, climb the Elo ladder and share your replays.">
+  <meta name="theme-color" content="#0b0f0b">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Match Cut">
+  <meta property="og:title" content="Match Cut - a movie link duel">
+  <meta property="og:description" content="Name a movie that shares an actor, director, writer, cinematographer or composer with the last one. Duel the bot or a friend, climb the Elo ladder and share your replays.">
+  <meta property="og:url" content="https://match-cut.github.io/">
+  <link rel="canonical" href="https://match-cut.github.io/">
+  <meta property="og:image" content="https://match-cut.github.io/og.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Match Cut: a retro movie link duel game">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Match Cut - a movie link duel">
+  <meta name="twitter:description" content="Name a movie that shares an actor, director, writer, cinematographer or composer with the last one. Duel the bot or a friend, climb the Elo ladder and share your replays.">
+  <meta name="twitter:image" content="https://match-cut.github.io/og.png">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <!-- META:END -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css?v=87">
+</head>
+<body>
+<header>
+  <div id="profile">
+    <small id="ver"></small>
+    <button id="profileBtn" title="Your profile" hidden></button>
+    <input id="profileEdit" type="text" maxlength="20" autocomplete="off" spellcheck="false" hidden>
+  </div>
+  <div class="marquee">+----------------+</div>
+  <h1 id="logo" role="link" tabindex="0" title="Home">MATCH CUT</h1>
+  <div class="tagline">&gt; a movie link duel_</div>
+  <div id="hud" hidden>
+        <div id="timer">30</div>
+    <div id="timerBar" title="Time elapsed this turn"><i></i></div>
+    <div id="turn"></div>
+    <button id="mute" class="ghost" title="Sounds on or off">[sound on]</button>
+  </div>
+</header>
+
+<div id="invite" hidden>
+  <span id="inviteText"></span>
+  <button id="inviteYes">Accept</button>
+  <button id="inviteNo" class="ghost">Decline</button>
+</div>
+
+<main>
+  <section id="loading"><p>Loading…</p></section>
+
+  <section id="login" hidden>
+    <h2 id="loginTitle">PLAYER LOGIN</h2>
+    <div class="tabs" id="loginTabs" hidden>
+      <button id="tabIn" class="ghost">Log in</button>
+      <button id="tabUp" class="ghost">Create account</button>
+    </div>
+    <p id="loginHelp">Pick a name. It appears on your shared results.</p>
+    <fieldset>
+      <legend>Username</legend>
+      <input id="username" type="text" maxlength="20" placeholder="Your name…" autocomplete="username" spellcheck="false">
+    </fieldset>
+    <fieldset id="pwBox" hidden>
+      <legend>Password</legend>
+      <input id="password" type="password" placeholder="Password" autocomplete="current-password">
+      <input id="password2" type="password" placeholder="Repeat password" autocomplete="new-password" hidden>
+    </fieldset>
+    <p id="privacyNote" hidden>strong password would keep it secured.</p>.</p>
+    <p id="loginErr" class="err"></p>
+    <button id="loginGo" class="big">Continue</button>
+  </section>
+
+  <section id="shared" hidden>
+    <h2 id="sharedTitle"></h2>
+    <p id="sharedText"></p>
+    <div id="sharedChain"></div>
+    <button id="sharedPlay" class="big">Play your own game</button>
+  </section>
+
+  <section id="home" hidden>
+    <h2>HOME</h2>
+    <p id="homeStats" class="note homeStats" hidden></p>
+    <p>Name a movie that shares a person (actor, director, writer, cinematographer or composer) with the last movie played. No repeats. Sudden death: run out of time, or get stumped, and you lose.</p>
+
+    <nav id="homeMenu">
+      <button id="homePlay" class="big">Play</button>
+      <button id="homeBoard" class="big ghost">Leaderboard</button>
+      <button id="homeDm" class="big ghost">Messages <span id="dmBadge" hidden>0</span></button>
+      <button id="homeProfile" class="big ghost"></button>
+    </nav>
+
+    <fieldset id="homeRooms" class="hl" hidden>
+      <legend>&#9679; Public rooms (live)</legend>
+      <div id="homeRoomList"></div>
+      <button id="homeRoomsAll" class="ghost">Create / join a room</button>
+    </fieldset>
+
+    <fieldset id="onlineBox" class="hl" hidden>
+      <legend>&#9679; Online now: <span id="onlineCount">…</span></legend>
+      <div class="subhead">Friends <span id="friendCount" class="note"></span></div>
+      <div id="friendList"></div>
+      <div class="subhead">Other players online <span id="olInfo" class="note"></span></div>
+      <div id="onlineList"></div>
+      <div class="pBtns olBtns"><button id="olPrev" class="ghost">&#9664; Prev</button><button id="olNext" class="ghost">Next &#9654;</button><button id="olRefresh" class="ghost">Refresh</button></div>
+      <small>&#9733; = friend. Click a name to see their profile. Other players are shown 10 at a time to keep the game light.</small>
+    </fieldset>
+
+    <fieldset id="findBox" hidden>
+      <legend>Find a player</legend>
+      <input id="findInput" type="text" maxlength="20" placeholder="Search username" autocomplete="off" spellcheck="false">
+      <div id="findList"></div>
+    </fieldset>
+
+    <p id="homeErr" class="err"></p>
+  </section>
+
+  <section id="play" hidden>
+    <h2>PLAY</h2>
+    <nav id="playMenu">
+      <button id="playRooms" class="big">1v1 / public rooms</button>
+      <small>Create a room or join one: public rooms are listed for everyone, private rooms use a link.</small>
+      <button id="playBot" class="big ghost">Play with bot</button>
+      <small>Solo practice against the computer.</small>
+    </nav>
+    <button id="playBack" class="big ghost">Back</button>
+  </section>
+
+  <section id="rooms" hidden>
+    <h2>1V1 ROOMS</h2>
+    <div class="pBtns">
+      <button id="roomPublic">Create public room</button>
+      <button id="roomPrivate" class="ghost">Create private room (link)</button>
+    </div>
+    <fieldset>
+      <legend>Join with a code</legend>
+      <div class="shareRow">
+        <input id="joinCode" type="text" maxlength="5" placeholder="ABCDE" autocomplete="off" spellcheck="false">
+        <button id="joinGo" class="ghost">Join</button>
+      </div>
+    </fieldset>
+    <fieldset class="hl">
+      <legend>&#9679; Public rooms (live)</legend>
+      <div id="roomList"></div>
+    </fieldset>
+    <p id="roomsErr" class="err"></p>
+    <button id="roomsBack" class="big ghost">Back</button>
+  </section>
+
+  <section id="board" hidden>
+    <h2>LEADERBOARD</h2>
+    <p class="note" style="text-align:center">Top rated players by Elo. Unrated players (no finished game yet) are not listed.</p>
+    <div id="boardList"></div>
+    <p id="boardErr" class="err"></p>
+    <button id="boardBack" class="big ghost">Back</button>
+  </section>
+
+  <section id="creditsPage" hidden>
+    <h2>CREDITS</h2>
+    <div id="creditsBody"></div>
+    <button id="creditsBack" class="big ghost">Back</button>
+  </section>
+
+  <section id="profilePage" hidden>
+    <div id="pBody"></div>
+    <p id="pErr" class="err"></p>
+    <div class="pBtns">
+      <button id="pSave" hidden>Save profile</button>
+      <button id="pBack" class="ghost">Back</button>
+      <button id="pLogout" class="ghost" hidden>Log out</button>
+    </div>
+  </section>
+
+  <section id="replayPage" hidden>
+    <div id="rBody"></div>
+    <div class="pBtns">
+      <button id="rShare" class="ghost">Copy replay link</button>
+      <button id="rBack" class="ghost">Back</button>
+    </div>
+  </section>
+
+  <section id="dmInbox" hidden>
+    <h2>MESSAGES</h2>
+    <p class="note" style="text-align:center">Private messages are logged for moderation and kept for 7 days.</p>
+    <div id="dmList"></div>
+    <p class="note" style="text-align:center">Start a conversation from a player's profile (Message) or by right-clicking their name.</p>
+    <button id="dmInboxBack" class="big ghost">Back</button>
+  </section>
+
+  <section id="dmThread" hidden>
+    <h2 id="dmTitle">MESSAGES</h2>
+    <p class="note" style="text-align:center">Private messages are logged for moderation and kept for 7 days.</p>
+    <div id="dmLog"></div>
+    <div class="chatRow dmSendRow">
+      <input id="dmInput" type="text" maxlength="300" placeholder="Write a private message…" autocomplete="off">
+      <button id="dmSend" class="ghost">Send</button>
+    </div>
+    <p id="dmErr" class="err"></p>
+    <button id="dmBack" class="big ghost">Back</button>
+  </section>
+
+  <section id="menu" hidden>
+    <h2 id="menuTitle">GAME SETUP</h2>
+    <p id="menuSub" class="note" style="text-align:center" hidden>You are the owner of this room: difficulty, genre, timeline and turn time are yours to set.</p>
+
+    <fieldset id="lvlBox">
+      <legend>Difficulty</legend>
+      <label class="opt"><input type="radio" name="lvl" value="easy"> <b>Easy</b><small>Bot knows only famous films, slow, makes mistakes</small></label>
+      <label class="opt"><input type="radio" name="lvl" value="medium" checked> <b>Medium</b><small>Wider knowledge, rare mistakes</small></label>
+      <label class="opt"><input type="radio" name="lvl" value="hard"> <b>Hard</b><small>Knows obscure films, picks tricky ones, fast</small></label>
+    </fieldset>
+
+    <fieldset>
+      <legend>Genre</legend>
+      <select id="genre"><option value="">Any genre</option></select>
+    </fieldset>
+
+    <fieldset>
+      <legend>Timeline (release years)</legend>
+      <select id="era">
+        <option value="">Custom</option>
+        <option value="1860-2100" selected>All time (from 1860)</option>
+        <option value="1980-2100">1980 onward</option>
+        <option value="1860-1959">Classics (to 1959)</option>
+        <option value="1960-1979">1960s–70s</option>
+        <option value="1980-1999">1980s–90s</option>
+        <option value="2000-2014">2000–2014</option>
+        <option value="2015-2100">2015 onward</option>
+      </select>
+      <div id="yearLabel" class="yearLabel"></div>
+      <div id="yearRange" class="yearRange">
+        <div class="yTrack"><div id="yFill" class="yFill"></div></div>
+        <input type="range" id="yFrom" min="1860" max="2030" step="1" value="1860" aria-label="From year">
+        <input type="range" id="yTo" min="1860" max="2030" step="1" value="2030" aria-label="To year">
+      </div>
+      <div class="note">Drag the two handles. The right end means "up to now".</div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Lifelines per player</legend>
+      <div class="row">
+        <label>Time (+15 s) <select id="nTime"><option>0</option><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option></select></label>
+        <label>Info <select id="nCredits"><option>0</option><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option></select></label>
+        <label>Skip <select id="nPass"><option>0</option><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option></select></label>
+      </div>
+      <div class="note">How many times each player may use each lifeline in a game (0-9). In a room the owner decides.</div>
+    </fieldset>
+
+    <fieldset id="maxBox" hidden>
+      <legend>Players in the room</legend>
+      <select id="maxPlayers">
+        <option value="2">2 players (1v1 duel)</option><option value="3">3 players</option><option value="4" selected>4 players</option>
+        <option value="5">5 players</option><option value="6">6 players</option><option value="7">7 players</option><option value="8">8 players</option>
+      </select>
+      <div class="note">With 3 or more it is elimination: players take turns in order, whoever runs out of time is out, the last one standing wins. You start the game once at least 2 players have joined; it starts by itself when the room is full.</div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Seconds per turn</legend>
+      <select id="secs">
+        <option>15</option><option>20</option><option selected>30</option><option>45</option><option>60</option><option>90</option>
+      </select>
+    </fieldset>
+
+    <p id="menuErr" class="err"></p>
+    <button id="start" class="big">Start game</button>
+    <button id="setupBack" class="big ghost">Back</button>
+  </section>
+
+  <section id="lobby" hidden>
+    <h2>WAITING FOR A FRIEND</h2>
+    <p>Send this link. The game starts as soon as they open it.</p>
+    <div class="shareRow">
+      <input id="roomLink" type="text" readonly>
+      <button id="roomCopy" class="ghost">Copy link</button>
+    </div>
+    <p id="lobbyInfo"></p>
+    <div id="lobbyPlayers" hidden></div>
+    <button id="lobbyStart" class="big" hidden>Start game</button>
+    <p id="lobbyErr" class="err"></p>
+    <button id="lobbyCancel" class="big ghost">Cancel</button>
+  </section>
+
+  <section id="over" hidden>
+    <h2 id="overTitle"></h2>
+    <p id="overText"></p>
+    <div id="shareBox" hidden>
+      <input id="shareLink" type="text" readonly>
+      <button id="shareCopy" class="ghost">Copy share link</button>
+    </div>
+    <button id="again" class="big">Play again</button>
+  </section>
+
+  <section id="game" hidden>
+    <div id="searchWrap">
+      <input id="search" type="text" placeholder="Type a movie title…" autocomplete="off" spellcheck="false">
+      <ul id="suggest" hidden></ul>
+    </div>
+    <div id="filters"></div>
+    <div id="playersBar" hidden></div>
+    <div id="msg"></div>
+
+    <div id="linkPick" hidden>
+      <h3>Several links found. Pick one:</h3>
+      <div id="linkOptions"></div>
+      <button id="linkCancel" class="ghost">Cancel</button>
+    </div>
+
+    <div id="lifelines">
+      <button class="life" id="llTime"><span class="sym">[T]</span><small>Time</small></button>
+      <button class="life" id="llCredits"><span class="sym">[i]</span><small>Info</small></button>
+      <button class="life" id="llPass"><span class="sym">[&gt;&gt;]</span><small>Skip</small></button>
+    </div>
+    <div id="credits" hidden></div>
+
+    <div id="chatBox" class="collapsed" hidden>
+      <button id="chatToggle" class="chatHead" aria-expanded="false" title="Show or hide chat">
+        <span>Chat</span><span id="chatBadge" hidden>0</span><span class="chev">&#9650;</span>
+      </button>
+      <div id="chatBody">
+        <div id="chatLog"></div>
+        <div class="chatRow">
+          <input id="chatInput" type="text" maxlength="200" placeholder="Message your opponent…" autocomplete="off">
+          <button id="chatSend" class="ghost">Send</button>
+        </div>
+        <small class="chatNote">One message every 3 s &middot; messages vanish after 5 min</small>
+      </div>
+    </div>
+
+    <div id="chain"></div>
+  </section>
+
+</main>
+<div id="banModal" hidden role="alertdialog" aria-labelledby="banTitle">
+  <div class="banCard">
+    <h2 id="banTitle">ACCOUNT BANNED</h2>
+    <p>You can't play with this account right now.</p>
+    <p class="banLabel">Reason</p>
+    <p id="banReason"></p>
+    <p id="banTime" class="banTime"></p>
+    <div id="appealBox" hidden>
+      <textarea id="appealText" maxlength="400" placeholder="Think this is a mistake? Tell the moderators why (optional)…"></textarea>
+      <button id="appealSend" class="ghost">Send appeal</button>
+      <p id="appealMsg" class="note"></p>
+    </div>
+    <button id="banOk" class="big">OK</button>
+  </div>
+</div>
+<div id="toast" hidden role="status"></div>
+<div id="syncBox" hidden role="dialog" aria-labelledby="syncTitle">
+  <div class="banCard rep">
+    <h3 id="syncTitle">Your login name changed</h3>
+    <p>Your username is now <b id="syncName"></b>, but you just signed in with the old name <b id="syncOld"></b>. The old name is no longer valid: confirm your password once to make <b id="syncName2"></b> your login name.</p>
+    <input type="password" id="syncPw" placeholder="Your password" autocomplete="current-password">
+    <p id="syncMsg" class="err"></p>
+    <div class="pBtns"><button id="syncGo">Continue</button><button id="syncOut" class="ghost">Log out</button></div>
+  </div>
+</div>
+<div id="reportBox" hidden role="dialog" aria-labelledby="repTitle">
+  <div class="banCard rep">
+    <h3 id="repTitle">Report <span id="repWho"></span></h3>
+    <select id="repCat"><option>Cheating</option><option>Harassment or abuse</option><option>Spam</option><option>Offensive name or avatar</option><option>Other</option></select>
+    <textarea id="repText" maxlength="300" placeholder="What happened? (5-300 characters)"></textarea>
+    <p id="repMsg" class="note"></p>
+    <div class="pBtns"><button id="repSend">Send report</button><button id="repCancel" class="ghost">Cancel</button></div>
+  </div>
+</div>
+<footer id="siteFooter" hidden>
+  <a id="fCredits" role="button" tabindex="0">Credits</a>
+  <a id="fInvite" target="_blank" rel="noopener noreferrer" hidden></a>
+  <a id="fMail" title="For business enquiries or ban appeals" hidden></a>
+</footer>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="1fe1accc0ef0.js?v=87"></script>
+<script src="78415349e5dc.js?v=87"></script>
+<script src="pixel.js?v=87"></script>
+<script src="3e1a9f88437d.js?v=87"></script>
+<script src="vendor/howler.core.min.js?v=87"></script>
+<script src="d3825609b6de.js?v=87"></script>
+</body>
+</html>

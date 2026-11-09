@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>mcut-a</title>
+<link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css?v=87">
+<style>
+  main.wide { max-width: 1100px; }
+  table { width: 100%; border-collapse: collapse; font-size: 1.1rem; }
+  th, td { border: 2px solid var(--dim); padding: 3px 8px; text-align: left; vertical-align: top; word-break: break-all; }
+  th { color: var(--hi); cursor: pointer; white-space: nowrap; }
+  .stats { display: flex; gap: 18px; flex-wrap: wrap; margin: 10px 0; }
+  .stats div { border: 3px double var(--bd); padding: 6px 14px; background: var(--panel); }
+  .stats b { color: var(--hi); font-size: 1.6rem; display: block; }
+  #u, #p, #filter { box-sizing: border-box; display: block; width: 100%; max-width: 360px; margin: 4px 0; padding: 6px 10px; font: inherit; font-size: 1.4rem;
+    color: var(--hi); caret-color: var(--hi); background: #000; border: 3px solid var(--bd); border-radius: 0; }
+  #mq, #my, #pq, #cft, #cfy, #cfp, .mrole { box-sizing: border-box; font: inherit; font-size: 1.3rem; padding: 4px 10px; color: var(--hi); caret-color: var(--hi); background: #000; border: 3px solid var(--bd); border-radius: 0; }
+  #mq:focus, #my:focus, #pq:focus, #cft:focus, #cfy:focus, #cfp:focus { outline: none; border-color: var(--hi); }
+  .mrole { font-size: 1.1rem; padding: 0 4px; color: var(--fg); }
+  button.tab.on { color: var(--hi); border-color: var(--hi); }
+  .fixed { color: var(--hi); }
+  .mfilm h3 { margin: 10px 0 4px; }
+  #u:focus, #p:focus, #filter:focus { outline: none; border-color: var(--hi); }
+  #filter { margin: 6px 0; font-size: 1.3rem; color: var(--fg); }
+  pre { background: #000; border: 2px solid var(--dim); padding: 10px; overflow: auto; max-height: 420px; font-size: 1rem; white-space: pre-wrap; word-break: break-all; }
+  details { margin-top: 18px; }
+  summary { color: var(--hi); cursor: pointer; }
+  .bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .bar .sp { flex: 1; }
+  button.mini { padding: 0 8px; font-size: 1rem; margin: 1px; white-space: nowrap; }
+  .devToggle { cursor: pointer; text-decoration: underline; color: var(--hi); }
+  tr.devRow td { background: #000; }
+  #banBox { position: fixed; inset: 0; z-index: 40; display: flex; align-items: center; justify-content: center; background: #000c; padding: 16px; }
+  #banBox .banCard { max-width: 420px; text-align: left; border: 4px double var(--hi); background: var(--panel); padding: 16px 20px; box-shadow: 6px 6px 0 #000; }
+  #banBox select, #banWhy { box-sizing: border-box; font: inherit; font-size: 1.2rem; margin: 6px 0; padding: 4px 8px; color: var(--fg); background: #000; border: 3px solid var(--bd); }
+  #banWhy { width: 100%; color: var(--hi); }
+  #banBox .bar { margin-top: 8px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>MATCH CUT</h1>
+  <div class="tagline">&gt;console_</div>
+</header>
+<main class="wide">
+  <section id="login">
+    <h2>LOGIN</h2>
+    <fieldset>
+      <legend>Username</legend>
+      <input id="u" type="text" autocomplete="username" spellcheck="false">
+    </fieldset>
+    <fieldset>
+      <legend>Password</legend>
+      <input id="p" type="password" autocomplete="current-password">
+    </fieldset>
+    <p id="err" class="err"></p>
+    <button id="go" class="big">Log in</button>
+  </section>
+
+  <div id="banBox" hidden>
+    <div class="banCard">
+      <h3 id="banWho">Ban</h3>
+      <label>Duration <select id="banDur">
+        <option value="3600000">1 hour</option><option value="21600000">6 hours</option><option value="86400000" selected>1 day</option>
+        <option value="259200000">3 days</option><option value="604800000">7 days</option><option value="2592000000">30 days</option><option value="0">Permanent</option>
+      </select></label>
+      <input id="banWhy" type="text" maxlength="100" placeholder="Reason (shown to the player, optional)">
+      <div class="bar"><button id="banGo">Ban</button><button id="banCancel" class="ghost">Cancel</button></div>
+    </div>
+  </div>
+
+  <section id="dash" hidden>
+    <div class="bar"><h2 style="margin:0">STAFF</h2><span id="who"></span><span class="sp"></span><button id="rawDl" class="ghost" hidden title="Dev only: download the whole database as JSON">Download raw data</button><button id="refresh" class="ghost">Refresh</button><button id="logout" class="ghost">Log out</button></div>
+    <div class="stats" id="stats"></div>
+    <p class="note">Roles: dev &gt; admin, plus custom roles that only the dev creates and edits (Roles tab). Admins can give or take away custom roles and manage bans; only a dev can add or remove admins. Devices are shown as salted-hash keys.</p>
+    <div class="bar" style="margin:8px 0"><button id="tabU" class="tab on">Users</button><button id="tabM" class="tab ghost">Movies</button><button id="tabR" class="tab ghost" hidden>Roles</button></div>
+    <div id="paneR" hidden>
+      <p class="note">Dev only. Change the label and colour of any role (shown on badges, profile banner/frame and the credits page) or create a custom role; staff then assign it to players from the Users table. Key: 2-12 letters/digits, label up to 16 characters.</p>
+      <div style="overflow:auto"><table id="rolesTbl"></table></div>
+      <div class="bar"><input id="rkey" type="text" maxlength="12" placeholder="key (e.g. vip)" style="width:140px"><input id="rlabel" type="text" maxlength="16" placeholder="label" style="width:160px"><input id="rcolor" type="color" value="#4aa8ff"><button id="rnew">+ Create role</button></div>
+      <p id="rerr" class="err"></p>
+    </div>
+    <div id="paneM" hidden>
+      <p class="note">Search a film to see exactly which people the game counts (top 15 cast, 3 directors, 6 writers, 2 cinematographers, 2 composers, matched by TMDB person id). Add a missing person or hide a wrong one: the fix is merged into the film for every player (new sessions pick it up). Bots still choose from TMDB filmographies, but any film they pick is checked with the fixes. A film TMDB does not have can be added with "+ New custom film" (title, year, genres, people); the game search then lists it.</p>
+      <div class="bar">
+        <input id="mq" type="text" placeholder="Film title or TMDB id" style="flex:1;min-width:220px;max-width:none">
+        <input id="my" type="text" inputmode="numeric" maxlength="4" placeholder="Year" style="width:90px">
+        <button id="mgo">Search</button>
+        <button id="mnew" class="ghost" title="Add a film that TMDB does not have (title, year, genres and its cast/crew)">+ New custom film</button>
+      </div>
+      <p id="merr" class="err"></p>
+      <div id="mres"></div>
+      <div id="mfilm" hidden></div>
+      <h3>Censored titles <span id="cenCount"></span></h3>
+      <p class="note">Open a film above and click "Censor title" (for extremely offensive titles only). Players then see its first letter followed by stars in search, the chain, info and replays. New sessions pick it up.</p>
+      <div style="overflow:auto"><table id="cenTbl"></table></div>
+      <h3>All fixes <span id="mfCount"></span></h3>
+      <div style="overflow:auto"><table id="mfTbl"></table></div>
+    </div>
+    <div id="paneU">
+    <h3>Reports <span id="repCount"></span></h3>
+    <p class="note">Legacy list: new player reports are no longer stored here, they go only to the report channel. This table shows older reports that are still open.</p>
+    <div style="overflow:auto"><table id="repTbl"></table></div>
+    <h3>Users</h3>
+    <div class="bar" style="margin:6px 0">
+      <input id="filter" type="text" placeholder="Search username" style="flex:1;min-width:260px;max-width:none">
+      <label>Order <select id="sortBy"><option value="createdAt">Newest accounts</option><option value="lastSeen">Last login</option></select></label>
+      <label>Per page <select id="pageSize"><option>25</option><option>50</option><option>100</option></select></label>
+    </div>
+    <div class="bar" style="margin:4px 0"><button id="pgPrev" class="ghost">&#9664; Prev</button><span id="pgInfo" class="note"></span><button id="pgNext" class="ghost">Next &#9654;</button></div>
+    <p id="err2" class="err"></p>
+    <div style="overflow:auto"><table id="tbl"></table></div>
+    </div>
+  </section>
+</main>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="../1fe1accc0ef0.js?v=87"></script>
+<script src="../3e1a9f88437d.js?v=87"></script>
+<script src="24b6db94ccc3.js?v=87"></script>
+</body>
+</html>
